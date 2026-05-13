@@ -40,6 +40,11 @@ function createApp() {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true }));
 
+  // Root route
+  app.get('/', (req, res) => {
+    res.send('Rentify backend is running');
+  });
+
   // Health check endpoint
   app.get('/api/health', (req, res) => {
     res.json({
