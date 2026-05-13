@@ -1,15 +1,19 @@
+const mongoose = require('mongoose');
 const { Review, Rental } = require('../models');
 const userService = require('./user.service');
+const itemService = require('./item.service');
+const notificationService = require('./notification.service');
 const ApiError = require('../utils/apiError');
 
 /**
  * Creates a review for a completed rental.
  * Validates that the rental is completed and the reviewer is a participant.
  * Prevents duplicate reviews per user per rental.
- * Input: { rentalId, rating, comment }, reviewerId (string)
+ * Supports dual-ratings (behavior + item) for lenders.
+ * Input: { rentalId, rating, itemRating, comment }, reviewerId (string)
  * Output: populated review object
  */
-async function createReview({ rentalId, rating, comment }, reviewerId) {
+async function createReview({ rentalId, rating, itemRating, comment }, reviewerId) {
   const rental = await Rental.findById(rentalId);
   if (!rental) {
     throw ApiError.notFound('Rental not found');
@@ -26,7 +30,8 @@ async function createReview({ rentalId, rating, comment }, reviewerId) {
     throw ApiError.forbidden('You are not part of this rental');
   }
 
-  // Determine who is being reviewed
+  // Determine type and reviewee
+  const type = isRenter ? 'lender' : 'renter';
   const revieweeId = isOwner ? rental.renter.toString() : rental.owner.toString();
 
   // Check for existing review
@@ -35,21 +40,69 @@ async function createReview({ rentalId, rating, comment }, reviewerId) {
     throw ApiError.conflict('You have already reviewed this rental');
   }
 
-  const review = await Review.create({
-    rental: rentalId,
-    reviewer: reviewerId,
-    reviewee: revieweeId,
-    rating,
-    comment: comment || '',
-  });
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  // Update the reviewee's average rating
-  await userService.updateUserRating(revieweeId, rating);
+  try {
+    const reviewData = {
+      rental: rentalId,
+      reviewer: reviewerId,
+      reviewee: revieweeId,
+      rating,
+      type,
+      comment: comment || '',
+    };
 
-  return review.populate([
-    { path: 'reviewer', select: 'name avatar' },
-    { path: 'reviewee', select: 'name avatar' },
-  ]);
+    // If renter is reviewing lender, they can also rate the item
+    if (type === 'lender' && itemRating) {
+      reviewData.itemRating = itemRating;
+    }
+
+    const review = await Review.create([reviewData], { session });
+
+    // Update Scores
+    if (type === 'lender') {
+      // Renter is rating Owner behavior
+      await userService.updateLenderRating(revieweeId, rating, session);
+      
+      // If item was rated, update Item score and Owner's item quality average
+      if (itemRating) {
+        await itemService.updateItemRating(rental.item, itemRating, session);
+        await userService.updateItemQualityAverage(revieweeId, itemRating, session);
+      }
+    } else {
+      // Owner is rating Renter behavior
+      await userService.updateRenterRating(revieweeId, rating, session);
+    }
+
+    // Always update the overall composite rating
+    // Note: We use an average of all rating inputs for simplicity in the legacy 'rating' field
+    const compositeRating = (type === 'lender' && itemRating) ? (rating + itemRating) / 2 : rating;
+    await userService.updateUserRating(revieweeId, compositeRating, session);
+
+    // Notify the reviewee
+    await notificationService.createNotification({
+      recipient: revieweeId,
+      sender: reviewerId,
+      type: 'review_received',
+      title: 'New Review!',
+      message: `You received a new ${type === 'lender' ? 'Lender' : 'Renter'} review!`,
+      link: `/profile`,
+    }, { session });
+
+    await session.commitTransaction();
+
+    const populatedReview = await review[0].populate([
+      { path: 'reviewer', select: 'name avatar' },
+      { path: 'reviewee', select: 'name avatar' },
+    ]);
+    return populatedReview;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
+  }
 }
 
 /**

@@ -43,23 +43,71 @@ async function updateProfile(userId, updateData) {
 }
 
 /**
- * Updates a user's average rating and total review count.
- * Called internally after a new review is created.
- * Input: userId (string), newRating (number)
- * Output: updated user object
+ * Generic helper to update a specific rating field on the User model atomically.
  */
-async function updateUserRating(userId, newRating) {
-  const user = await User.findById(userId);
-  if (!user) {
-    throw ApiError.notFound('User not found');
-  }
-
-  const totalRatingPoints = user.rating * user.totalReviews + newRating;
-  user.totalReviews += 1;
-  user.rating = Math.round((totalRatingPoints / user.totalReviews) * 10) / 10;
-
-  await user.save();
-  return user;
+async function updateRatingField(userId, fieldName, countFieldName, newRating, session = null) {
+  return User.findByIdAndUpdate(
+    userId,
+    [
+      {
+        $set: {
+          [countFieldName]: { $add: [{ $ifNull: [`$${countFieldName}`, 0] }, 1] },
+          [fieldName]: {
+            $round: [
+              {
+                $divide: [
+                  { 
+                    $add: [
+                      { $multiply: [{ $ifNull: [`$${fieldName}`, 0] }, { $ifNull: [`$${countFieldName}`, 0] }] }, 
+                      newRating 
+                    ] 
+                  },
+                  { $add: [{ $ifNull: [`$${countFieldName}`, 0] }, 1] },
+                ],
+              },
+              1,
+            ],
+          },
+        },
+      },
+    ],
+    { new: true, session }
+  );
 }
 
-module.exports = { getUserById, updateProfile, updateUserRating };
+/**
+ * Updates a user's overall average rating.
+ */
+async function updateUserRating(userId, newRating, session = null) {
+  return updateRatingField(userId, 'rating', 'totalReviews', newRating, session);
+}
+
+/**
+ * Updates a user's lender (host behavior) rating.
+ */
+async function updateLenderRating(userId, newRating, session = null) {
+  return updateRatingField(userId, 'lenderRating', 'totalLenderReviews', newRating, session);
+}
+
+/**
+ * Updates a user's renter rating.
+ */
+async function updateRenterRating(userId, newRating, session = null) {
+  return updateRatingField(userId, 'renterRating', 'totalRenterReviews', newRating, session);
+}
+
+/**
+ * Updates a user's average item quality score (across all their items).
+ */
+async function updateItemQualityAverage(userId, newRating, session = null) {
+  return updateRatingField(userId, 'itemQualityAverage', 'totalItemQualityReviews', newRating, session);
+}
+
+module.exports = { 
+  getUserById, 
+  updateProfile, 
+  updateUserRating, 
+  updateLenderRating, 
+  updateRenterRating, 
+  updateItemQualityAverage 
+};

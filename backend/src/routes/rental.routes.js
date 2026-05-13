@@ -7,11 +7,15 @@ const validate = require('../middlewares/validate');
 const router = Router();
 
 // Validation schemas
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
 const createRentalSchema = z.object({
   itemId: z.string().min(1, 'Item ID is required'),
-  startDate: z.string().min(1, 'Start date is required'),
-  endDate: z.string().min(1, 'End date is required'),
+  startDate: z.coerce.date().min(today, 'Start date cannot be in the past'),
+  endDate: z.coerce.date().min(today, 'End date cannot be in the past'),
   message: z.string().max(500).optional().default(''),
+  offerPrice: z.number().positive('Offer price must be positive').optional().nullable(),
 });
 
 const updateStatusSchema = z.object({

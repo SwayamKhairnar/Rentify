@@ -113,7 +113,7 @@ export default function Profile() {
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
                     />
                   </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div className="profile-edit-actions">
                     <button type="submit" className="btn btn-primary btn-sm">Save</button>
                     <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(false)}>Cancel</button>
                   </div>
@@ -121,7 +121,37 @@ export default function Profile() {
               ) : (
                 <>
                   <h2 className="profile-name">{user.name}</h2>
-                  <StarRating rating={user.rating} size={16} />
+                  <div className="profile-rating-group">
+                    <div className="overall-rating">
+                      <StarRating rating={user.rating} size={20} />
+                      <span className="total-count">({user.totalReviews || 0} reviews)</span>
+                    </div>
+                  </div>
+
+                  <div className="reputation-breakdown">
+                    <div className="rep-item">
+                      <div className="rep-label">As a Lender</div>
+                      <div className="rep-scores">
+                        <div className="rep-sub">
+                          <span>Behavior</span>
+                          <StarRating rating={user.lenderRating || 0} size={12} showValue={true} />
+                        </div>
+                        <div className="rep-sub">
+                          <span>Products</span>
+                          <StarRating rating={user.itemQualityAverage || 0} size={12} showValue={true} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rep-item">
+                      <div className="rep-label">As a Renter</div>
+                      <div className="rep-scores">
+                        <div className="rep-sub">
+                          <span>Behavior</span>
+                          <StarRating rating={user.renterRating || 0} size={12} showValue={true} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="profile-details">
                     <div className="profile-detail">
@@ -193,10 +223,26 @@ export default function Profile() {
                   <div key={review._id} className="review-card card">
                     <div className="card-body">
                       <div className="review-header">
-                        <div className="review-author">{review.reviewer?.name || 'Anonymous'}</div>
-                        <StarRating rating={review.rating} size={14} />
+                        <div className="review-author-wrap">
+                          <div className="review-author">{review.reviewer?.name || 'Anonymous'}</div>
+                          <div className={`review-type-badge ${review.type}`}>
+                            {review.type === 'lender' ? 'Lending Experience' : 'Renting Experience'}
+                          </div>
+                        </div>
+                        <div className="review-ratings">
+                          <div className="rating-item">
+                            <span>{review.type === 'lender' ? 'Owner' : 'Renter'}:</span>
+                            <StarRating rating={review.rating} size={12} />
+                          </div>
+                          {review.itemRating && (
+                            <div className="rating-item">
+                              <span>Product:</span>
+                              <StarRating rating={review.itemRating} size={12} />
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      {review.comment && <p className="review-comment">{review.comment}</p>}
+                      {review.comment && <p className="review-comment">"{review.comment}"</p>}
                       <div className="review-date">{formatDate(review.createdAt)}</div>
                     </div>
                   </div>

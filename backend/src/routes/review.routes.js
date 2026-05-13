@@ -10,6 +10,7 @@ const router = Router();
 const createReviewSchema = z.object({
   rentalId: z.string().min(1, 'Rental ID is required'),
   rating: z.number().int().min(1).max(5, 'Rating must be between 1 and 5'),
+  itemRating: z.number().int().min(1).max(5, 'Item rating must be between 1 and 5').optional(),
   comment: z.string().max(500).optional().default(''),
 });
 

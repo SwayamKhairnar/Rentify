@@ -1,0 +1,420 @@
+/* ── RentalDetail Layout ── */
+.rd-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── Sections (shared card wrapper spacing) ── */
+.rd-section {
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.rd-section:last-child {
+  margin-bottom: 0;
+}
+
+.rd-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary-light);
+  margin-bottom: 14px;
+}
+
+/* ── Item Card ── */
+.rd-item-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.rd-item-img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+}
+
+.rd-item-body {
+  padding: 16px;
+}
+
+.rd-item-category {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: capitalize;
+  margin-bottom: 6px;
+}
+
+.rd-item-title {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  transition: color var(--transition-fast);
+}
+
+.rd-item-title:hover {
+  color: var(--primary-light);
+}
+
+.rd-item-ppd {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.rd-item-ppd span {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+/* ── Rental Period ── */
+.rd-period-grid {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.rd-period-box {
+  flex: 1;
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+
+.rd-period-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.rd-period-val {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.rd-period-arrow {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.rd-duration {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+/* ── Price Breakdown ── */
+.rd-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.rd-price-val {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.rd-price-divider {
+  border: none;
+  border-top: 1px dashed var(--border);
+  margin: 8px 0 12px;
+}
+
+.rd-price-total {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.rd-price-total-val {
+  font-size: 1.15rem;
+  color: var(--accent);
+}
+
+/* ── Offer Price Box ── */
+.rd-offer-box {
+  margin-top: 14px;
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  border: 1px solid;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.rd-offer-box.lower {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.rd-offer-box.higher {
+  background: rgba(253, 203, 110, 0.08);
+  border-color: rgba(253, 203, 110, 0.3);
+}
+
+.rd-offer-box.same {
+  background: rgba(116, 185, 255, 0.08);
+  border-color: rgba(116, 185, 255, 0.3);
+}
+
+.rd-offer-header {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.rd-offer-amount {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #10b981;
+}
+
+.rd-offer-box.higher .rd-offer-amount {
+  color: var(--warning);
+}
+
+.rd-offer-box.same .rd-offer-amount {
+  color: var(--info);
+}
+
+.rd-offer-note {
+  font-size: 0.78rem;
+  margin-top: 6px;
+  color: #10b981;
+}
+
+.rd-offer-note.higher {
+  color: var(--warning);
+}
+
+.rd-offer-note.same {
+  color: var(--info);
+}
+
+/* ── Status Card ── */
+.rd-status-card {
+  background: var(--bg-elevated);
+}
+
+.rd-status-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.rd-status-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.rd-status-badge {
+  font-size: 0.85rem;
+  padding: 6px 14px;
+}
+
+.rd-status-time {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.rd-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rd-actions .btn {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* ── Person Card ── */
+.rd-person-card {
+  text-align: center;
+}
+
+.rd-person-link {
+  display: block;
+}
+
+.rd-person-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 auto 10px;
+}
+
+.rd-person-name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.rd-person-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+/* ── Message ── */
+.rd-message-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.7;
+}
+
+/* ── Chat button ── */
+.rd-chat-btn {
+  width: 100%;
+  margin-bottom: 12px;
+  justify-content: center;
+}
+
+/* ── Info note ── */
+.rd-info-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(116, 185, 255, 0.08);
+  border: 1px solid rgba(116, 185, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  font-size: 0.82rem;
+  color: var(--info);
+  line-height: 1.5;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .rd-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .rd-left {
+    order: 2;
+  }
+
+  .rd-right {
+    order: 1;
+  }
+}
+
+/* Audit: Migrated from inline styles */
+.rd-completed-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rd-review-btn {
+  width: 100%;
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+}
+
+.rd-report-btn {
+  width: 100%;
+  color: var(--danger) !important;
+  border-color: rgba(255, 118, 117, 0.2) !important;
+}
+
+.rd-success-banner {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rd-reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rd-review-item {
+  padding: 12px;
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+}
+
+.rd-review-item-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.rd-review-item-author {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.rd-review-item-comment {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.rd-review-item-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+}

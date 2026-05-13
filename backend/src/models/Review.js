@@ -27,6 +27,16 @@ const reviewSchema = new mongoose.Schema(
       min: 1,
       max: 5,
     },
+    itemRating: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
+    type: {
+      type: String,
+      enum: ['lender', 'renter'],
+      required: true,
+    },
     comment: {
       type: String,
       maxlength: 500,

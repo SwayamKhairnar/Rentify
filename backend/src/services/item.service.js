@@ -1,4 +1,5 @@
-const { Item } = require('../models');
+const mongoose = require('mongoose');
+const { Item, Rental } = require('../models');
 const ApiError = require('../utils/apiError');
 const { PAGINATION } = require('../utils/constants');
 
@@ -19,8 +20,12 @@ async function createItem(itemData, ownerId) {
  * Output: { items, pagination }
  */
 async function getItems(query) {
-  const page = parseInt(query.page) || PAGINATION.DEFAULT_PAGE;
-  const limit = Math.min(parseInt(query.limit) || PAGINATION.DEFAULT_LIMIT, PAGINATION.MAX_LIMIT);
+  const parsedPage = parseInt(query.page);
+  const page = parsedPage > 0 ? parsedPage : PAGINATION.DEFAULT_PAGE;
+  
+  const parsedLimit = parseInt(query.limit);
+  const limit = parsedLimit > 0 ? Math.min(parsedLimit, PAGINATION.MAX_LIMIT) : PAGINATION.DEFAULT_LIMIT;
+  
   const skip = (page - 1) * limit;
 
   // Build filter object
@@ -31,6 +36,9 @@ async function getItems(query) {
   }
   if (query.condition) {
     filter.condition = query.condition;
+  }
+  if (query.owner) {
+    filter.owner = query.owner;
   }
   if (query.search) {
     filter.$text = { $search: query.search };
@@ -89,6 +97,9 @@ async function updateItem(itemId, updateData, userId) {
     throw ApiError.forbidden('You can only edit your own items');
   }
 
+  // We no longer restrict isAvailable based on active rentals, 
+  // as isAvailable now purely controls listing visibility for future bookings.
+
   Object.assign(item, updateData);
   await item.save();
   return item.populate('owner', 'name email avatar campus rating');
@@ -108,8 +119,37 @@ async function deleteItem(itemId, userId) {
     throw ApiError.forbidden('You can only delete your own items');
   }
 
-  await Item.findByIdAndDelete(itemId);
-  return item;
+  // Check if there are any active or approved rentals
+  const activeRentals = await Rental.countDocuments({
+    item: itemId,
+    status: { $in: ['approved', 'active'] },
+  });
+
+  if (activeRentals > 0) {
+    throw ApiError.badRequest('Cannot delete an item that is currently rented or approved for rent. Please complete or cancel the rentals first.');
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    await Item.findByIdAndDelete(itemId, { session });
+    
+    // Auto-cancel all pending rentals for this item
+    await Rental.updateMany(
+      { item: itemId, status: 'pending' },
+      { status: 'cancelled', message: 'The item has been deleted by the owner.' },
+      { session }
+    );
+
+    await session.commitTransaction();
+    return item;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
+  }
 }
 
 /**
@@ -123,4 +163,45 @@ async function getItemsByUser(userId) {
     .sort({ createdAt: -1 });
 }
 
-module.exports = { createItem, getItems, getItemById, updateItem, deleteItem, getItemsByUser };
+/**
+ * Updates an item's average rating atomically.
+ */
+async function updateItemRating(itemId, newRating, session = null) {
+  return Item.findByIdAndUpdate(
+    itemId,
+    [
+      {
+        $set: {
+          totalReviews: { $add: [{ $ifNull: ['$totalReviews', 0] }, 1] },
+          rating: {
+            $round: [
+              {
+                $divide: [
+                  { 
+                    $add: [
+                      { $multiply: [{ $ifNull: ['$rating', 0] }, { $ifNull: ['$totalReviews', 0] }] }, 
+                      newRating 
+                    ] 
+                  },
+                  { $add: [{ $ifNull: ['$totalReviews', 0] }, 1] },
+                ],
+              },
+              1,
+            ],
+          },
+        },
+      },
+    ],
+    { new: true, session }
+  );
+}
+
+module.exports = { 
+  createItem, 
+  getItems, 
+  getItemById, 
+  updateItem, 
+  deleteItem, 
+  getItemsByUser,
+  updateItemRating
+};

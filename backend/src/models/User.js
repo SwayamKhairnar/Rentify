@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
       match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email'],
     },
+    role: {
+      type: String,
+      enum: ['student', 'admin'],
+      default: 'student',
+    },
     password: {
       type: String,
       required: [true, 'Password is required'],
@@ -57,6 +62,40 @@ const userSchema = new mongoose.Schema(
     totalReviews: {
       type: Number,
       default: 0,
+    },
+    lenderRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    totalLenderReviews: {
+      type: Number,
+      default: 0,
+    },
+    renterRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    totalRenterReviews: {
+      type: Number,
+      default: 0,
+    },
+    itemQualityAverage: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    totalItemQualityReviews: {
+      type: Number,
+      default: 0,
+    },
+    isSuspended: {
+      type: Boolean,
+      default: false,
     },
   },
   {

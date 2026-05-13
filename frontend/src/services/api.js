@@ -19,8 +19,11 @@ async function request(endpoint, options = {}) {
     ...options,
   };
 
-  if (config.body && typeof config.body === 'object') {
+  if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
     config.body = JSON.stringify(config.body);
+  } else if (config.body instanceof FormData) {
+    // Let the browser set the Content-Type automatically for boundary
+    delete config.headers['Content-Type'];
   }
 
   // Handle duplicate /api/api securely
@@ -35,7 +38,15 @@ async function request(endpoint, options = {}) {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || 'Something went wrong');
+    const error = new Error(data.message || 'Something went wrong');
+    error.status = response.status;
+    
+    // Global Auth Error Handling
+    if (response.status === 401 || response.status === 403) {
+      window.dispatchEvent(new CustomEvent('rentify-auth-error', { detail: { status: response.status } }));
+    }
+    
+    throw error;
   }
 
   return data;

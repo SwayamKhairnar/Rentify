@@ -44,6 +44,11 @@ const rentalSchema = new mongoose.Schema(
       maxlength: 500,
       default: '',
     },
+    offerPrice: {
+      type: Number,
+      min: 0,
+      default: null,
+    },
   },
   {
     timestamps: true,

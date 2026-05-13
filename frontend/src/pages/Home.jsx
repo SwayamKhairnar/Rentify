@@ -65,47 +65,29 @@ export default function Home() {
       <section className="hero" id="hero-section">
         <div className="container">
           <div className="hero-content">
-            <span className="hero-badge">🎓 Campus-only marketplace</span>
+            <span className="hero-badge">Campus Marketplace</span>
             <h1 className="hero-title">
-              Rent anything,<br />
-              from anyone on <span className="hero-highlight">campus</span>
+              Rent anything <br /> 
+              on <span className="hero-highlight">Campus</span>
             </h1>
             <p className="hero-subtitle">
-              Save money, reduce waste, and connect with fellow students.
-              List your stuff or find what you need — it's that simple.
+              The sustainable way for students to share resources.
             </p>
 
             <form className="hero-search" onSubmit={handleSearch} id="search-form">
-              <Search size={20} className="hero-search-icon" />
               <input
                 type="text"
-                placeholder="Search for textbooks, cameras, bikes..."
+                placeholder="Find textbooks, bikes, electronics..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="hero-search-input"
                 id="search-input"
               />
               <button type="submit" className="btn btn-primary" id="search-btn">
+                <Search size={18} />
                 Search
               </button>
             </form>
-
-            <div className="hero-stats">
-              <div className="hero-stat">
-                <span className="hero-stat-value">Free</span>
-                <span className="hero-stat-label">to list</span>
-              </div>
-              <div className="hero-stat-divider"></div>
-              <div className="hero-stat">
-                <span className="hero-stat-value">Verified</span>
-                <span className="hero-stat-label">students</span>
-              </div>
-              <div className="hero-stat-divider"></div>
-              <div className="hero-stat">
-                <span className="hero-stat-value">Instant</span>
-                <span className="hero-stat-label">booking</span>
-              </div>
-            </div>
           </div>
         </div>
       </section>

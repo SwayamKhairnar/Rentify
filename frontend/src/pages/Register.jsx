@@ -35,107 +35,90 @@ export default function Register() {
   }
 
   return (
-    <div className="auth-page page">
+    <div className="auth-page">
       {toast && <Toast message={toast.message} type={toast.type} />}
 
-      <div className="auth-container">
+      <div className="auth-card">
         <div className="auth-header">
-          <div className="auth-logo">R</div>
-          <h1>Create account</h1>
-          <p>Join Rentify and start renting on campus</p>
+          <div className="auth-icon-box">
+            <User size={32} />
+          </div>
+          <h1 className="auth-title">Create Account</h1>
+          <p className="auth-subtitle">Join the student marketplace</p>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit} id="register-form">
           <div className="form-group">
             <label className="form-label" htmlFor="reg-name">Full Name</label>
-            <div className="input-icon-wrapper">
-              <User size={18} className="input-icon" />
-              <input
-                type="text"
-                id="reg-name"
-                name="name"
-                className="form-input input-with-icon"
-                placeholder="John Doe"
-                value={form.name}
-                onChange={handleChange}
-                required
-                minLength={2}
-              />
-            </div>
+            <input
+              type="text"
+              id="reg-name"
+              name="name"
+              className="form-input"
+              placeholder="John Doe"
+              value={form.name}
+              onChange={handleChange}
+              required
+              minLength={2}
+            />
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="reg-email">Email</label>
-            <div className="input-icon-wrapper">
-              <Mail size={18} className="input-icon" />
-              <input
-                type="email"
-                id="reg-email"
-                name="email"
-                className="form-input input-with-icon"
-                placeholder="you@university.edu"
-                value={form.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
+            <label className="form-label" htmlFor="reg-email">Email Address</label>
+            <input
+              type="email"
+              id="reg-email"
+              name="email"
+              className="form-input"
+              placeholder="you@university.edu"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
           </div>
 
           <div className="form-group">
             <label className="form-label" htmlFor="reg-password">Password</label>
-            <div className="input-icon-wrapper">
-              <Lock size={18} className="input-icon" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="reg-password"
-                name="password"
-                className="form-input input-with-icon"
-                placeholder="Min 6 characters"
-                value={form.password}
-                onChange={handleChange}
-                required
-                minLength={6}
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="reg-password"
+              name="password"
+              className="form-input"
+              placeholder="Min 6 characters"
+              value={form.password}
+              onChange={handleChange}
+              required
+              minLength={6}
+            />
           </div>
 
           <div className="form-group">
             <label className="form-label" htmlFor="reg-campus">Campus (optional)</label>
-            <div className="input-icon-wrapper">
-              <Building2 size={18} className="input-icon" />
-              <input
-                type="text"
-                id="reg-campus"
-                name="campus"
-                className="form-input input-with-icon"
-                placeholder="e.g. MIT, Stanford"
-                value={form.campus}
-                onChange={handleChange}
-              />
-            </div>
+            <input
+              type="text"
+              id="reg-campus"
+              name="campus"
+              className="form-input"
+              placeholder="e.g. MIT, Stanford"
+              value={form.campus}
+              onChange={handleChange}
+            />
           </div>
 
           <button
             type="submit"
-            className="btn btn-primary btn-lg auth-submit"
+            className="btn btn-primary btn-lg id-rent-submit"
             disabled={loading}
             id="register-submit"
+            style={{ width: '100%', marginTop: '8px' }}
           >
-            {loading ? 'Creating account...' : 'Create account'}
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
 
         <p className="auth-footer">
           Already have an account?{' '}
-          <Link to="/login" className="auth-link">Sign in</Link>
+          <Link to="/login" className="auth-link">Sign In</Link>
         </p>
       </div>
     </div>

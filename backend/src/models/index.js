@@ -8,6 +8,8 @@ const Rental = require('./Rental');
 const Conversation = require('./Conversation');
 const Message = require('./Message');
 const Review = require('./Review');
+const Notification = require('./Notification');
+const Report = require('./Report');
 
 module.exports = {
   User,
@@ -16,4 +18,6 @@ module.exports = {
   Conversation,
   Message,
   Review,
+  Notification,
+  Report,
 };

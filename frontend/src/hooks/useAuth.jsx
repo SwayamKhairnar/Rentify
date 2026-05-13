@@ -18,13 +18,29 @@ export function AuthProvider({ children }) {
       authService
         .getMe()
         .then((res) => setUser(res.data.user))
-        .catch(() => {
-          localStorage.removeItem('rentify_token');
+        .catch((err) => {
+          if (err.status === 401 || err.status === 403) {
+            localStorage.removeItem('rentify_token');
+            setUser(null);
+          }
         })
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
+  }, []);
+
+  // Listen for global auth errors
+  useEffect(() => {
+    const handleAuthError = (e) => {
+      console.warn('Auth Error Detected, logging out...', e.detail.status);
+      localStorage.removeItem('rentify_token');
+      setUser(null);
+      // Optional: window.location.href = '/login'; // Force redirect
+    };
+
+    window.addEventListener('rentify-auth-error', handleAuthError);
+    return () => window.removeEventListener('rentify-auth-error', handleAuthError);
   }, []);
 
   /**

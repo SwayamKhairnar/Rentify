@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { MapPin, Calendar, ArrowLeft, User } from 'lucide-react';
+import { MapPin, Calendar, ArrowLeft, User, ChevronLeft, ChevronRight, X as CloseIcon, Edit3, Trash2 } from 'lucide-react';
 import { itemService } from '../services/item.service';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
@@ -25,7 +25,20 @@ export default function ItemDetails() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [message, setMessage] = useState('');
+  const [offerPrice, setOfferPrice] = useState('');
   const [renting, setRenting] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  // Computed rental duration & cost (safe: item may be null on first render)
+  const rentalDays = (() => {
+    if (!startDate || !endDate) return 0;
+    const diff = new Date(endDate) - new Date(startDate);
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : 0;
+  })();
+  const totalCost = item ? rentalDays * (item.pricePerDay || 0) : 0;
 
   useEffect(() => {
     async function fetchItem() {
@@ -55,6 +68,7 @@ export default function ItemDetails() {
         startDate,
         endDate,
         message,
+        offerPrice: offerPrice ? Number(offerPrice) : undefined,
       });
       showToast('Rental request sent!');
       setTimeout(() => navigate('/rentals'), 1500);
@@ -65,10 +79,25 @@ export default function ItemDetails() {
     }
   }
 
+  async function handleDelete() {
+    if (!window.confirm('Are you sure you want to delete this item?')) return;
+    
+    setDeleting(true);
+    try {
+      await itemService.deleteItem(item._id);
+      showToast('Item deleted successfully');
+      navigate('/profile');
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   if (loading) return <LoadingSpinner />;
   if (!item) return null;
 
-  const imgSrc = item.images?.length > 0 ? item.images[0] : getPlaceholderImage(item.category);
+  const imgSrc = item.images?.length > 0 ? item.images[activeImageIndex] : getPlaceholderImage(item.category);
   const isOwner = user && item.owner?._id === user._id;
 
   return (
@@ -81,17 +110,58 @@ export default function ItemDetails() {
         </button>
 
         <div className="item-detail" id="item-detail">
-          <div className="item-detail-image">
-            <img src={imgSrc} alt={item.title} />
-            <span className="item-card-category">{item.category}</span>
+          <div className="item-detail-gallery">
+            <div 
+              className="item-detail-image id-image-zoom" 
+              onClick={() => setIsLightboxOpen(true)}
+              title="Click to zoom"
+            >
+              <img src={imgSrc} alt={item.title} />
+              <span className="item-card-category">{item.category}</span>
+            </div>
+            {item.images?.length > 1 && (
+              <div className="item-image-thumbnails">
+                {item.images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className={`thumbnail-btn ${idx === activeImageIndex ? 'active' : ''}`}
+                    onClick={() => setActiveImageIndex(idx)}
+                  >
+                    <img src={img} alt={`${item.title} - ${idx + 1}`} />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="item-detail-info">
             <h1 className="item-detail-title">{item.title}</h1>
 
-            <div className="item-detail-price">
-              {formatPrice(item.pricePerDay)}
-              <span>/day</span>
+            {isOwner && (
+              <div className="item-owner-actions id-owner-actions">
+                <Link to={`/items/${item._id}/edit`} className="btn btn-secondary btn-sm">
+                  <Edit3 size={16} /> Edit Item
+                </Link>
+                <button 
+                  className="btn btn-sm id-btn-delete" 
+                  onClick={handleDelete}
+                  disabled={deleting}
+                >
+                  <Trash2 size={16} /> {deleting ? 'Deleting...' : 'Delete Item'}
+                </button>
+              </div>
+            )}
+
+            <div className="item-detail-header-row">
+              <div className="item-detail-price">
+                {formatPrice(item.pricePerDay)}
+                <span>/day</span>
+              </div>
+              <div className="item-product-rating">
+                <StarRating rating={item.rating || 0} size={18} showValue={true} />
+                <span className="item-review-count">({item.totalReviews || 0} item reviews)</span>
+              </div>
             </div>
 
             <div className="item-detail-meta">
@@ -152,6 +222,51 @@ export default function ItemDetails() {
                     />
                   </div>
                 </div>
+
+                {/* ── Price Breakdown Card ── */}
+                {rentalDays > 0 && (
+                  <div className="price-breakdown" id="price-breakdown">
+                    <div className="price-breakdown-header">
+                      <span>Price Breakdown</span>
+                    </div>
+                    <div className="price-breakdown-row">
+                      <span className="pb-label">
+                        ₹{item.pricePerDay.toLocaleString('en-IN')}/day × {rentalDays} {rentalDays === 1 ? 'day' : 'days'}
+                      </span>
+                      <span className="pb-value">₹{totalCost.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="price-breakdown-total">
+                      <span>Total (listed price)</span>
+                      <span className="pb-total-value">₹{totalCost.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Offer Price ── */}
+                <div className="form-group">
+                  <label className="form-label offer-label">
+                    Your Offer Price
+                    <span className="offer-optional">(optional — negotiate with owner)</span>
+                  </label>
+                  <div className="offer-input-wrap">
+                    <span className="offer-currency">₹</span>
+                    <input
+                      type="number"
+                      className="form-input offer-input"
+                      placeholder={rentalDays > 0 ? totalCost.toString() : 'e.g. 180'}
+                      value={offerPrice}
+                      onChange={(e) => setOfferPrice(e.target.value)}
+                      min={1}
+                      id="offer-price"
+                    />
+                  </div>
+                  {offerPrice && rentalDays > 0 && Number(offerPrice) < totalCost && (
+                    <p className="offer-savings">
+                      You're offering ₹{(totalCost - Number(offerPrice)).toLocaleString('en-IN')} less than the listed price
+                    </p>
+                  )}
+                </div>
+
                 <div className="form-group">
                   <label className="form-label">Message (optional)</label>
                   <textarea
@@ -164,10 +279,9 @@ export default function ItemDetails() {
                 </div>
                 <button
                   type="submit"
-                  className="btn btn-primary btn-lg"
+                  className="btn btn-primary btn-lg id-rent-submit"
                   disabled={renting}
                   id="rent-submit"
-                  style={{ width: '100%' }}
                 >
                   {renting ? 'Sending request...' : 'Send Rental Request'}
                 </button>
@@ -175,13 +289,52 @@ export default function ItemDetails() {
             )}
 
             {!item.isAvailable && (
-              <div className="badge badge-cancelled" style={{ padding: '12px 20px', fontSize: '0.9rem' }}>
+              <div className="badge badge-cancelled id-unavailable-banner">
                 This item is currently unavailable
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {isLightboxOpen && (
+        <div className="lightbox-overlay" onClick={() => setIsLightboxOpen(false)}>
+          <button className="lightbox-close" onClick={() => setIsLightboxOpen(false)}>
+            <CloseIcon size={24} />
+          </button>
+          
+          {item.images?.length > 1 && (
+            <button 
+              className="lightbox-prev" 
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : item.images.length - 1));
+              }}
+            >
+              <ChevronLeft size={36} />
+            </button>
+          )}
+
+          <img 
+            src={imgSrc} 
+            alt={item.title} 
+            className="lightbox-img" 
+            onClick={(e) => e.stopPropagation()} 
+          />
+
+          {item.images?.length > 1 && (
+            <button 
+              className="lightbox-next" 
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveImageIndex((prev) => (prev < item.images.length - 1 ? prev + 1 : 0));
+              }}
+            >
+              <ChevronRight size={36} />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

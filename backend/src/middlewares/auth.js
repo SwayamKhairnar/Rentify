@@ -25,6 +25,10 @@ async function authenticate(req, res, next) {
       throw ApiError.unauthorized('User no longer exists');
     }
 
+    if (user.isSuspended) {
+      throw ApiError.forbidden('Your account has been suspended by an administrator.');
+    }
+
     req.user = user;
     next();
   } catch (error) {

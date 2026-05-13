@@ -43,9 +43,14 @@ function errorHandler(err, req, res, next) {
     console.error('❌ Error:', err);
   }
 
+  // In production, mask non-operational errors
+  const finalMessage = process.env.NODE_ENV === 'production' && !err.isOperational 
+    ? 'Something went wrong on our end' 
+    : message;
+
   res.status(statusCode).json({
     success: false,
-    message,
+    message: finalMessage,
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 }

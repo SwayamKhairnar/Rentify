@@ -32,63 +32,52 @@ export default function Login() {
   }
 
   return (
-    <div className="auth-page page">
+    <div className="auth-page">
       {toast && <Toast message={toast.message} type={toast.type} />}
 
-      <div className="auth-container">
+      <div className="auth-card">
         <div className="auth-header">
-          <div className="auth-logo">R</div>
-          <h1>Welcome back</h1>
-          <p>Sign in to your Rentify account</p>
+          <div className="auth-icon-box">
+            <Lock size={32} />
+          </div>
+          <h1 className="auth-title">Welcome back</h1>
+          <p className="auth-subtitle">Sign in to your Rentify account</p>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit} id="login-form">
           <div className="form-group">
-            <label className="form-label" htmlFor="login-email">Email</label>
-            <div className="input-icon-wrapper">
-              <Mail size={18} className="input-icon" />
-              <input
-                type="email"
-                id="login-email"
-                className="form-input input-with-icon"
-                placeholder="you@university.edu"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+            <label className="form-label" htmlFor="login-email">Email Address</label>
+            <input
+              type="email"
+              id="login-email"
+              className="form-input"
+              placeholder="you@university.edu"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
 
           <div className="form-group">
             <label className="form-label" htmlFor="login-password">Password</label>
-            <div className="input-icon-wrapper">
-              <Lock size={18} className="input-icon" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="login-password"
-                className="form-input input-with-icon"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="login-password"
+              className="form-input"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+            />
           </div>
 
           <button
             type="submit"
-            className="btn btn-primary btn-lg auth-submit"
+            className="btn btn-primary btn-lg id-rent-submit"
             disabled={loading}
             id="login-submit"
+            style={{ width: '100%', marginTop: '8px' }}
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
@@ -96,7 +85,7 @@ export default function Login() {
 
         <p className="auth-footer">
           Don't have an account?{' '}
-          <Link to="/register" className="auth-link">Sign up</Link>
+          <Link to="/register" className="auth-link">Create Account</Link>
         </p>
       </div>
     </div>
