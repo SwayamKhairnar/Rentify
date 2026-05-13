@@ -13,17 +13,19 @@ async function startServer() {
   // Validate environment variables
   const env = validateEnv();
 
-  // Connect to MongoDB
-  await connectDB();
-
-  // Create and start Express app
+  // Create Express app
   const app = createApp();
-  const PORT = env.PORT || 4000;
+  const PORT = parseInt(env.PORT, 10) || 4000;
 
-  app.listen(PORT, () => {
-    console.log(`\n🚀 Rentify API Server running on http://localhost:${PORT}`);
+  // Start listening on 0.0.0.0 (important for Railway)
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n🚀 Rentify API Server running on port ${PORT}`);
     console.log(`📦 Environment: ${env.NODE_ENV}`);
-    console.log(`💾 Database: ${env.MONGODB_URI}\n`);
+    
+    // Connect to MongoDB AFTER starting the server to pass platform health checks immediately
+    connectDB().catch(err => {
+      console.error('❌ Delayed MongoDB connection failed:', err);
+    });
   });
 }
 
