@@ -5,7 +5,18 @@
  * Output: parsed JSON response
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const RAW_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
+// Normalize BASE_URL so it ALWAYS ends with /api (even if the user entered https://my-app.onrender.com)
+function getNormalizedBaseUrl() {
+  let url = RAW_BASE_URL.trim().replace(/\/+$/, '');
+  if (!url.endsWith('/api')) {
+    url = `${url}/api`;
+  }
+  return url;
+}
+
+const BASE_URL = getNormalizedBaseUrl();
 
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem('rentify_token');
@@ -26,15 +37,13 @@ async function request(endpoint, options = {}) {
     delete config.headers['Content-Type'];
   }
 
-  // Handle duplicate /api/api securely
+  // Handle leading/duplicate /api prefixes cleanly
   let finalEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  let finalBaseUrl = BASE_URL.replace(/\/+$/, '');
-  
-  if (finalBaseUrl.endsWith('/api') && finalEndpoint.startsWith('/api/')) {
+  if (finalEndpoint.startsWith('/api/')) {
     finalEndpoint = finalEndpoint.replace(/^\/api/, '');
   }
 
-  const response = await fetch(`${finalBaseUrl}${finalEndpoint}`, config);
+  const response = await fetch(`${BASE_URL}${finalEndpoint}`, config);
   const data = await response.json();
 
   if (!response.ok) {
