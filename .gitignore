@@ -35,3 +35,7 @@ postgres_data/
 .env
 .env.local
 .env.production
+
+# Personal guides
+INTERVIEW_GUIDE.md
+STEP_BY_STEP_GUIDE.md
