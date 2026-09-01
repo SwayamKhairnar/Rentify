@@ -1,121 +1,154 @@
-# 📦 Rentify — Campus Equipment Sharing Platform
+# Rentify
 
-[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://www.postgresql.org/)
-[![React](https://img.shields.io/badge/React-18-61DAFB.svg)](https://reactjs.org/)
-[![Swagger](https://img.shields.io/badge/OpenAPI-3.0-85EA2D.svg)](http://localhost:4000/swagger-ui.html)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
+[![Java](https://img.shields.io/badge/Java-21-orange.svg?style=flat-square&logo=openjdk)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-brightgreen.svg?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg?style=flat-square&logo=postgresql)](https://www.postgresql.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB.svg?style=flat-square&logo=react)](https://reactjs.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg?style=flat-square&logo=docker)](https://www.docker.com/)
+[![Tests](https://img.shields.io/badge/Tests-70%20Passing-success.svg?style=flat-square)]()
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-**Rentify** is a production-grade, peer-to-peer campus equipment rental platform that enables university students and staff to list, discover, rent, review, and message each other securely.
-
-Built as a high-performance **Spring Boot 3.3** monolithic backend with a responsive **React 18** frontend, backed by **PostgreSQL 16** with **Flyway** schema versioning, stateless **JWT authentication**, **WebSocket (STOMP)** real-time messaging, and **Cloudinary** media storage.
+A peer-to-peer equipment rental marketplace designed for campus communities. Rentify allows students and faculty to list, discover, rent, and communicate in real time, reducing the cost of short-term equipment access.
 
 ---
 
-## 🏛️ System Architecture
+## 🔗 Live Links
 
-```mermaid
-graph TD
-    User["Web Browser (React 18 / Tailwind)"] -->|HTTP / REST| Nginx["Nginx Reverse Proxy (:80)"]
-    User -->|WebSocket (STOMP)| Nginx
-    
-    Nginx -->|/api/*| SpringBoot["Spring Boot Monolith (:4000)"]
-    Nginx -->|/ws/*| SpringBoot
-    Nginx -->|/*| Static["React SPA Static Files"]
-    
-    subgraph Spring Boot Layer
-        Security["Spring Security (HMAC-SHA512 JWT + RBAC)"]
-        Controllers["REST & WebSocket Controllers"]
-        Services["Domain Services & Atomic Rating Engine"]
-        Specifications["Dynamic JPA Specifications"]
-        Repositories["Spring Data JPA Repositories"]
-    end
-    
-    SpringBoot --> Security
-    Security --> Controllers
-    Controllers --> Services
-    Services --> Specifications
-    Services --> Repositories
-    
-    Repositories --> PostgreSQL[("PostgreSQL 16 (Flyway Migrations)")]
-    Services --> Cloudinary[("Cloudinary Media Cloud")]
+- **Web Application:** [https://rentify-liart-eta.vercel.app](https://rentify-liart-eta.vercel.app)
+- **API Documentation & Swagger UI:** [https://rentify-xam8.onrender.com/swagger-ui.html](https://rentify-xam8.onrender.com/swagger-ui.html)
+- **Health Endpoint:** [https://rentify-xam8.onrender.com/api/health](https://rentify-xam8.onrender.com/api/health)
+
+---
+
+## Key Features
+
+- **Equipment Catalog & Search:** Filter by category (textbooks, cameras, electronics, bikes, sports, instruments) with price sorting and keyword search.
+- **Conflict-Free Booking:** Transactional date-interval validation prevents double-booking race conditions across concurrent requests.
+- **Real-Time Chat:** Bidirectional messaging using Spring WebSockets with the STOMP protocol and SockJS fallback.
+- **4-Tier Peer Reviews:** Atomic rating recalculation for renters, owners, and individual items.
+- **Admin Moderation:** Role-based dashboard (`ROLE_ADMIN`) with dispute resolution, report handling, and user suspension.
+- **Image Pipeline:** Cloudinary CDN integration with automatic image resizing, format optimization, and secure delivery.
+- **Dark / Light Mode:** Obsidian dark theme and high-contrast porcelain light theme with CSS variable transitions.
+
+---
+
+## Tech Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Backend** | Spring Boot 3.3.4, Java 21, Spring Data JPA, Spring Security 6.3, Spring WebSocket (STOMP) |
+| **Database** | PostgreSQL 16 (Neon.tech), Flyway Migration Tool |
+| **Frontend** | React 18, Vite, React Router 6, Lucide Icons |
+| **Authentication** | Stateless JWT (HMAC-SHA512), BCrypt Password Hashing |
+| **Cloud & Media** | Cloudinary Image CDN, Java Mail (SMTP) |
+| **DevOps & Hosting** | Docker, Docker Compose, Nginx, Render, Vercel |
+| **Testing** | JUnit 5, AssertJ, MockMvc (70 automated integration tests) |
+
+---
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    React 18 Single-Page App                 │
+│              (Vercel Edge Network / Nginx Container)        │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ HTTPS / WSS
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 Spring Boot 3.3 REST + STOMP API            │
+│                     (Java 21 / Docker Container)            │
+│                                                             │
+│   [Auth / JWT]    [Item Catalog]    [Rental Engine]         │
+│   [WebSocket]     [Review Engine]   [Admin Dashboard]       │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ HikariCP (JDBC)
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 PostgreSQL 16 Relational DB                 │
+│                 (Flyway Managed Migrations)                 │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## ✨ Key Features
+## Quickstart (Local Development)
 
-- **🔐 Robust Security & Auth:** Stateless HMAC-SHA512 JWT authentication, BCrypt password hashing, method-level RBAC (`@PreAuthorize("hasRole('ADMIN')")`), and instant token blocking on account suspension.
-- **📅 Double-Booking Prevention:** Strict 5-stage rental lifecycle (`pending` → `approved`/`rejected` → `active` → `completed`/`cancelled`) with inclusive date calculation and date-overlap locking.
-- **⭐ Atomic 4-Tier Rating Engine:** Weighted reputation calculation for lenders, renters, platform overall, and equipment quality with 1 decimal precision.
-- **💬 Real-Time Messaging & Notifications:** WebSockets with STOMP over SockJS (`/topic/conversations/{id}`), unread badge counts, and asynchronous event notifications.
-- **🛡️ Admin & Dispute Suite:** System statistics dashboard, user suspension toggle, equipment moderation, and dispute resolution workflows.
-- **📄 Interactive API Documentation:** Live OpenAPI 3.0 / Swagger UI dashboard at `/swagger-ui.html` with built-in JWT authorization.
-- **🐳 Single-Command Docker Deployment:** Multi-stage Dockerfiles with healthchecked Docker Compose.
+### Prerequisites
+- [Docker & Docker Compose](https://docs.docker.com/get-docker/) **or**
+- Java 21 (JDK) & Node.js 18+
 
----
-
-## 🚀 Quick Start with Docker Compose (Recommended)
-
-Run the entire application (PostgreSQL + Spring Boot + React) with zero local dependencies:
-
+### 1. Clone the Repository
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/Rentify.git
+git clone https://github.com/SwayamKhairnar/Rentify.git
 cd Rentify
-
-# Start all services
-docker compose up --build
 ```
 
-- **Frontend App:** `http://localhost:3000` (or `http://localhost:80`)
-- **Backend API:** `http://localhost:4000/api`
-- **Interactive Swagger UI:** `http://localhost:4000/swagger-ui.html`
+### 2. Configure Environment Variables
+```bash
+cp .env.example .env
+```
+*(Optionally add your Cloudinary keys to `.env` for custom image uploads).*
+
+### 3. Run with Docker Compose
+```bash
+docker compose up -d --build
+```
+
+### 4. Access the Application
+- **Frontend App:** [http://localhost:3000](http://localhost:3000)
+- **Backend API:** [http://localhost:4000/api/health](http://localhost:4000/api/health)
+- **Swagger Documentation:** [http://localhost:4000/swagger-ui.html](http://localhost:4000/swagger-ui.html)
 
 ---
 
-## 💻 Local Development Setup
+## Demo Accounts
 
-### 1. Backend (Spring Boot 3.3 + Java 21)
-```bash
-# Ensure PostgreSQL is running (database: rentify)
-cd backend
-mvn clean test             # Run 68+ integration tests
-mvn spring-boot:run        # Starts on port 4000
-```
+The database seeds automatically on startup with the following test credentials:
 
-### 2. Frontend (React 18 + Vite)
-```bash
-cd frontend
-npm install
-npm run dev                # Starts on http://localhost:5173
-```
-
----
-
-## 👥 Seed Demo Accounts
-
-The database seeds automatically on first run with demo data:
-
-| Email | Password | Role | Bio / Gear |
+| Role | Email | Password | Description |
 | :--- | :--- | :--- | :--- |
-| `admin@example.com` | `password123` | `ADMIN` | Platform Administrator |
-| `john@example.com` | `password123` | `STUDENT` | Sony Alpha Camera, Yamaha Guitar |
-| `jane@example.com` | `password123` | `STUDENT` | TI-84 Calculator, Chemistry Textbook |
-| `sarah@example.com` | `password123` | `STUDENT` | Trek Road Bike |
+| **Admin** | `admin@example.com` | `password123` | Full admin dashboard & dispute access |
+| **User (Owner)** | `john@example.com` | `password123` | Listed camera and textbook |
+| **User (Renter)** | `jane@example.com` | `password123` | Active rental requests & reviews |
+| **User** | `mike@example.com` | `password123` | Student borrower account |
 
 ---
 
-## 🧪 Testing & Verification
+## API Summary
+
+| Method | Endpoint | Access | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Public | Create student account |
+| `POST` | `/api/auth/login` | Public | Authenticate and obtain JWT |
+| `GET` | `/api/items` | Public | Search items with pagination & filters |
+| `POST` | `/api/items` | Authenticated | List a new item with image URLs |
+| `POST` | `/api/rentals` | Authenticated | Create rental booking request |
+| `PATCH`| `/api/rentals/{id}/status` | Authenticated | Approve, reject, or complete rental |
+| `GET` | `/api/chat/conversations` | Authenticated | Fetch active chat threads |
+| `POST` | `/api/reviews` | Authenticated | Submit rental review & rating |
+| `GET` | `/api/admin/stats` | Admin Only | View system-wide platform metrics |
+| `PATCH`| `/api/admin/users/{id}/status` | Admin Only | Suspend or reactivate user |
+
+---
+
+## Testing
+
+The test suite covers controllers, services, security filters, validation, and database constraints.
 
 ```bash
 cd backend
-mvn clean test
+mvn test
 ```
-All **68+ automated tests** execute against an isolated database covering:
-- Authentication & JWT token lifecycles
-- Booking state machine & overlap validations
-- Peer-to-peer rating recalculation
-- Dynamic specification filtering
-- Admin privilege guards & dispute resolutions
+
+```
+Results:
+Tests run: 70, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+```
+
+---
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
