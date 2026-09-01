@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
+import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
@@ -20,36 +21,38 @@ import AdminRoute from './components/AdminRoute';
 import { NotificationProvider } from './context/NotificationContext';
 
 /**
- * Root App component — sets up routing and auth context.
+ * Root App component — sets up routing, theme, and auth context.
  */
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <NotificationProvider>
-          <Navbar />
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/items/:id" element={<ItemDetails />} />
-            <Route path="/profile/:id" element={<UserProfile />} />
+    <ThemeProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <NotificationProvider>
+            <Navbar />
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/items/:id" element={<ItemDetails />} />
+              <Route path="/profile/:id" element={<UserProfile />} />
 
-            {/* Protected routes */}
-            <Route path="/items/new" element={<ProtectedRoute><CreateItem /></ProtectedRoute>} />
-            <Route path="/items/:id/edit" element={<ProtectedRoute><EditItem /></ProtectedRoute>} />
-            <Route path="/rentals" element={<ProtectedRoute><RentalRequests /></ProtectedRoute>} />
-            <Route path="/rentals/:id" element={<ProtectedRoute><RentalDetail /></ProtectedRoute>} />
-            <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+              {/* Protected routes */}
+              <Route path="/items/new" element={<ProtectedRoute><CreateItem /></ProtectedRoute>} />
+              <Route path="/items/:id/edit" element={<ProtectedRoute><EditItem /></ProtectedRoute>} />
+              <Route path="/rentals" element={<ProtectedRoute><RentalRequests /></ProtectedRoute>} />
+              <Route path="/rentals/:id" element={<ProtectedRoute><RentalDetail /></ProtectedRoute>} />
+              <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
 
-            {/* Admin-only routes */}
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          </Routes>
-        </NotificationProvider>
-      </AuthProvider>
-    </BrowserRouter>
+              {/* Admin-only routes */}
+              <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            </Routes>
+          </NotificationProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }

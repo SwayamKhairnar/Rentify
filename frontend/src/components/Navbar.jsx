@@ -1,18 +1,19 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useNotifications } from '../hooks/useNotifications';
-import { LogOut, Plus, MessageCircle, Package, User, Menu, X, Bell, Shield } from 'lucide-react';
+import { useTheme } from '../hooks/useTheme';
+import { LogOut, Plus, MessageCircle, Package, User, Menu, X, Bell, Shield, Sun, Moon } from 'lucide-react';
 import { useState } from 'react';
 import logo from '../assets/logo_new.png';
 import './Navbar.css';
 
 /**
- * Navbar — top navigation bar with Rentify branding, nav links, and auth actions.
- * Adapts to authenticated vs. guest state.
+ * Navbar — top navigation bar with Rentify branding, nav links, auth actions, and theme switch.
  */
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { unreadCount } = useNotifications();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -32,13 +33,29 @@ export default function Navbar() {
           <span className="brand-text">Rentify</span>
         </Link>
 
-        <button
-          className="navbar-toggle"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="navbar-right-actions">
+          {/* Theme Toggle Button */}
+          <button
+            className="theme-toggle-btn"
+            onClick={toggleTheme}
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? (
+              <Sun size={19} className="theme-icon sun-icon" />
+            ) : (
+              <Moon size={19} className="theme-icon moon-icon" />
+            )}
+          </button>
+
+          <button
+            className="navbar-toggle"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
 
         <div className={`navbar-menu ${menuOpen ? 'open' : ''}`}>
           <Link to="/" className="navbar-link" onClick={() => setMenuOpen(false)}>

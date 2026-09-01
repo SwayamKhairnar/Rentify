@@ -2,12 +2,11 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(11, 15, 25, 0.85);
+  background: var(--bg-card);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   height: 70px;
-  transition: all var(--transition-normal);
 }
 
 .navbar-inner {
@@ -24,7 +23,7 @@
   font-size: 1.55rem;
   font-weight: 800;
   letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #818CF8 0%, #22D3EE 100%);
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -39,12 +38,62 @@
   width: 42px;
   height: 42px;
   object-fit: contain;
-  filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.4));
+  filter: drop-shadow(0 0 10px var(--primary-glow));
   transition: filter var(--transition-normal);
 }
 
 .navbar-brand:hover .navbar-logo-img {
-  filter: drop-shadow(0 0 16px rgba(99, 102, 241, 0.7));
+  filter: drop-shadow(0 0 16px var(--primary-glow));
+}
+
+.navbar-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ===== Theme Toggle Animated Button ===== */
+.theme-toggle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-toggle-btn:hover {
+  transform: scale(1.1) rotate(15deg);
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary-light);
+  box-shadow: 0 0 15px -3px var(--primary-glow);
+}
+
+.theme-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.theme-icon {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+
+.sun-icon {
+  color: #FBBF24;
+  filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.6));
+}
+
+.moon-icon {
+  color: #6366F1;
+  filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.6));
 }
 
 .navbar-menu {
@@ -67,7 +116,7 @@
 
 .navbar-link:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--primary-soft);
 }
 
 .navbar-link.active {
@@ -119,7 +168,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 4px;
-  border: 2px solid #0B0F19;
+  border: 2px solid var(--bg-card);
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
 }
 
@@ -139,7 +188,7 @@
 }
 
 .navbar-toggle:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--primary-soft);
 }
 
 @media (max-width: 768px) {
@@ -156,7 +205,7 @@
     top: 70px;
     left: 0;
     right: 0;
-    background: rgba(17, 24, 39, 0.95);
+    background: var(--bg-card);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
     padding: 20px;
