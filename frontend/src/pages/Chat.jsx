@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { chatService } from '../services/chat.service';
+import { websocketService } from '../services/websocket.service';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -29,7 +30,21 @@ export default function Chat() {
 
   useEffect(() => {
     if (activeConvo) {
-      fetchMessages(activeConvo._id);
+      const convoId = activeConvo._id || activeConvo.id;
+      fetchMessages(convoId);
+
+      const unsubscribe = websocketService.subscribeToConversation(convoId, (incomingMsg) => {
+        setMessages((prev) => {
+          const msgId = incomingMsg._id || incomingMsg.id;
+          if (prev.some((m) => (m._id || m.id) === msgId)) return prev;
+          return [...prev, incomingMsg];
+        });
+        fetchConversations();
+      });
+
+      return () => {
+        if (unsubscribe) unsubscribe();
+      };
     }
   }, [activeConvo]);
 
